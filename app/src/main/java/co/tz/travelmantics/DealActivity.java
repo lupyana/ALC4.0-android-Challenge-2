@@ -30,7 +30,6 @@ public class DealActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_insert);
-        FirebaseUtil.openFbReference("traveldeals", this);
         mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
         txtTitle = findViewById(R.id.txtTitle);
@@ -68,6 +67,23 @@ public class DealActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.save_menu, menu);
+        if (FirebaseUtil.isAdmin == true) {
+            menu.findItem(R.id.delete_menu).setVisible(true);
+            menu.findItem(R.id.save_menu).setVisible(true);
+            enableEditTexts(true);
+        }
+        else  {
+            menu.findItem(R.id.delete_menu).setVisible(false);
+            menu.findItem(R.id.save_menu).setVisible(false);
+            enableEditTexts(false);
+        }
+        return  true;
+    }
+
     private void clean() {
         txtPrice.setText("");
         txtTitle.setText("");
@@ -87,7 +103,7 @@ public class DealActivity extends AppCompatActivity {
         }
     }
 
-    public void deleteDeal() {
+    private void deleteDeal() {
         if (deal == null) {
             Toast.makeText(this, "Please save deal before deleting", Toast.LENGTH_LONG).show();
             return;
@@ -95,15 +111,16 @@ public class DealActivity extends AppCompatActivity {
         mDatabaseReference.child(deal.getId()).removeValue();
     }
 
-    public void backToList() {
+    private void backToList() {
         Intent intent = new Intent(this, ListActivity.class);
         startActivity(intent);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.save_menu, menu);
-        return  true;
+    private void enableEditTexts(boolean isEnabled) {
+        txtPrice.setEnabled(isEnabled);
+        txtDescription.setEnabled(isEnabled);
+        txtTitle.setEnabled(isEnabled);
+
+
     }
 }
