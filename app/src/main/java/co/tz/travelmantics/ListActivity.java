@@ -20,21 +20,15 @@ import java.util.ArrayList;
 import co.tz.travelmantics.adapters.DealAdapter;
 
 public class ListActivity extends AppCompatActivity {
-    ArrayList<TravelDeal> deals;
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mDatabaseReference;
-    private ChildEventListener mChildListener;
+//    ArrayList<TravelDeal> deals;
+//    private FirebaseDatabase mFirebaseDatabase;
+//    private DatabaseReference mDatabaseReference;
+//    private ChildEventListener mChildListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
-
-        RecyclerView rvDeals = findViewById(R.id.rvDeals);
-        final DealAdapter adapter = new DealAdapter();
-        rvDeals.setAdapter(adapter);
-        LinearLayoutManager dealsLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        rvDeals.setLayoutManager(dealsLayoutManager);
 
     }
 
@@ -56,5 +50,23 @@ public class ListActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FirebaseUtil.openFbReference("traveldeals", this);
+        RecyclerView rvDeals = findViewById(R.id.rvDeals);
+        final DealAdapter adapter = new DealAdapter();
+        rvDeals.setAdapter(adapter);
+        LinearLayoutManager dealsLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        rvDeals.setLayoutManager(dealsLayoutManager);
+        FirebaseUtil.attachListener();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        FirebaseUtil.detachListener();
     }
 }
