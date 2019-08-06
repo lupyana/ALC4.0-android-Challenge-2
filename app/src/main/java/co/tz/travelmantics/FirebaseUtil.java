@@ -51,7 +51,7 @@ public class FirebaseUtil {
                     }
                     else {
                         String userId = firebaseAuth.getUid();
-                        chekcAdmin(userId);
+                        checkAdmin(userId);
                     }
                     Toast.makeText(callerActivity.getBaseContext(), "Welcome Back", Toast.LENGTH_LONG).show();
                 }
@@ -77,7 +77,7 @@ public class FirebaseUtil {
                 RC_SIGN_IN);
     }
 
-    public static void chekcAdmin(String uid) {
+    public static void checkAdmin(String uid) {
         FirebaseUtil.isAdmin = false;
         DatabaseReference ref = mFirebaseDatabase.getReference().child("administrators")
                 .child(uid);
