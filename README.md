@@ -1,12 +1,15 @@
-#Overview
+# Overview
 This challenge is an Android Application called Travelmantics. It will help user find holiday deals.
 
-##Features
+## Features
 - Firebase Authentication
+Login with email or google account
 - Firebase Storage
-- FIrebase Cloud Database
+Uploaded images stored in firebase
+- Firebase Cloud Database
+Data is stored in fireabase cloud storage
 
-##Credentials
+## Credentials
 
 Admin User login
 email: user@test.com
