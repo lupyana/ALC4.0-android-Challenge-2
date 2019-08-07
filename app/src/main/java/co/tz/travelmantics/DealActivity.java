@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
@@ -41,6 +43,7 @@ public class DealActivity extends AppCompatActivity {
     TravelDeal deal;
     Button uploadBtn;
     ImageView imageView;
+    ProgressDialog dialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,16 +80,36 @@ public class DealActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == PIC_RESULT && resultCode == RESULT_OK) {
             Uri imageUri = data.getData();
+            dialog = new ProgressDialog(DealActivity.this);
+            dialog.setMessage("Uploading...");
+            dialog.setIndeterminate(false);
+            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            dialog.setProgress(0);
             final StorageReference ref = FirebaseUtil.mStorageRef.child(imageUri.getLastPathSegment());
-            ref.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            ref.putFile(imageUri).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+
+                    dialog.show();
+
+                        double progress = (taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount())*100;
+                        String progressText = taskSnapshot.getBytesTransferred()/1024+"KBs/" + taskSnapshot.getTotalByteCount() + "Kbs";
+                        dialog.setProgress((int)progress);
+
+
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
                 @Override
                 public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
 
                     taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
                         @Override
                         public void onComplete(@NonNull Task<Uri> task) {
+                            dialog.dismiss();
                             String url = task.getResult().toString();
                             deal.setImageUrl(url);
                             deal.setImageName(taskSnapshot.getStorage().getPath());
@@ -95,6 +118,13 @@ public class DealActivity extends AppCompatActivity {
                             showImage(url);
                         }
                     });
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    dialog.dismiss();
+                    Toast.makeText(getApplicationContext(), "Image upload Failed", Toast.LENGTH_LONG).show();
+
                 }
             });
         }
@@ -184,6 +214,7 @@ public class DealActivity extends AppCompatActivity {
 
     private void backToList() {
         Intent intent = new Intent(this, ListActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
