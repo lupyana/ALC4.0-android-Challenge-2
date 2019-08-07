@@ -141,8 +141,6 @@ public class DealActivity extends AppCompatActivity {
                 return true;
             case R.id.delete_menu:
                 deleteDeal();
-                Toast.makeText(this, "Deal Deleted", Toast.LENGTH_LONG).show();
-                backToList();
                 return true;
              default:
                  return super.onOptionsItemSelected(item);
@@ -188,9 +186,9 @@ public class DealActivity extends AppCompatActivity {
     }
 
     private void deleteDeal() {
-        if (deal == null) {
+        if ((deal.getTitle() == null) && (deal.getDescription() == null) && (deal.getPrice() == null)) {
             Toast.makeText(this, "Please save deal before deleting", Toast.LENGTH_SHORT).show();
-            return  ;
+            return ;
         }
         if (deal.getImageName() != null && deal.getImageName().isEmpty() == false) {
             Log.d("Image Name", deal.getImageName());
@@ -209,6 +207,8 @@ public class DealActivity extends AppCompatActivity {
             });
         }
         mDatabaseReference.child(deal.getId()).removeValue();
+        Toast.makeText(this, "Deal Deleted", Toast.LENGTH_LONG).show();
+        backToList();
 
     }
 
