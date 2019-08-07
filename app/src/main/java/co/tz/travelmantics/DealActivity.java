@@ -135,9 +135,6 @@ public class DealActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.save_menu:
                 saveDeal();
-                Toast.makeText(this, "Deal Saved", Toast.LENGTH_LONG).show();
-                clean();
-                backToList();
                 return true;
             case R.id.delete_menu:
                 deleteDeal();
@@ -174,14 +171,24 @@ public class DealActivity extends AppCompatActivity {
     }
 
     private void saveDeal() {
-        deal.setTitle(txtTitle.getText().toString());
-        deal.setDescription(txtDescription.getText().toString());
-        deal.setPrice(txtPrice.getText().toString());
-        if(deal.getId() == null) {
-            mDatabaseReference.push().setValue(deal);
-        }
-        else {
-            mDatabaseReference.child(deal.getId()).setValue(deal);
+        if(txtTitle.length() == 0) {
+            txtTitle.setError("Please enter title");
+        }  else if (txtPrice.length() == 0) {
+            txtPrice.setError("Please enter price");
+        }else if(txtDescription.length() == 0) {
+            txtDescription.setError("Please enter description");
+        } else  {
+            deal.setTitle(txtTitle.getText().toString());
+            deal.setDescription(txtDescription.getText().toString());
+            deal.setPrice(txtPrice.getText().toString());
+            if (deal.getId() == null) {
+                mDatabaseReference.push().setValue(deal);
+            } else {
+                mDatabaseReference.child(deal.getId()).setValue(deal);
+            }
+            Toast.makeText(this, "Deal Saved", Toast.LENGTH_LONG).show();
+            clean();
+            backToList();
         }
     }
 
