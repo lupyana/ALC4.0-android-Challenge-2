@@ -18,6 +18,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
@@ -50,7 +52,7 @@ public class DealActivity extends AppCompatActivity {
         imageView = findViewById(R.id.image);
 
         Intent intent = getIntent();
-        TravelDeal deal = (TravelDeal) intent.getSerializableExtra("Deal");
+        deal = (TravelDeal) intent.getSerializableExtra("Deal");
         if (deal == null) {
             deal = new TravelDeal();
         }
@@ -71,47 +73,31 @@ public class DealActivity extends AppCompatActivity {
         });
     }
 
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if (requestCode == PIC_RESULT && resultCode == RESULT_OK) {
-//            Uri imageUri = data.getData();
-//            StorageReference ref = FirebaseUtil.mStorageRef.child(imageUri.getLastPathSegment());
-//            ref.putFile(imageUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                @Override
-//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-////                    String url = taskSnapshot.getStorage().getDownloadUrl().toString();
-//                    Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-//                    Log.d("Url", uriTask.toString());
-////                    deal.setImageUrl(url);
-////                    showImage(url);
-//                }
-//            });
-//        }
-//    }
-        @Override
-        protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-            super.onActivityResult(requestCode, resultCode, data);
-            if (requestCode == PIC_RESULT && resultCode == RESULT_OK) {
-                Uri imageUri = data.getData();
-                final StorageReference ref = FirebaseUtil.mStorageRef.child(imageUri.getLastPathSegment());
-                ref.putFile(imageUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        String pictureName = taskSnapshot.getStorage().getPath();
-//                        deal.setImageName(pictureName);
-                        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                Log.d("url", uri.toString());
-                                    deal.setImageUrl(uri.toString());
-                                showImage(uri.toString());
-                            }
-                        });
-                    }
-                });
-            }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PIC_RESULT && resultCode == RESULT_OK) {
+            Uri imageUri = data.getData();
+            final StorageReference ref = FirebaseUtil.mStorageRef.child(imageUri.getLastPathSegment());
+            ref.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
+
+                    taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            String url = task.getResult().toString();
+                            deal.setImageUrl(url);
+                            Toast.makeText(getApplicationContext(), "Image uploaded", Toast.LENGTH_LONG).show();
+
+//                            mTravelDeal.setImageName(taskSnapshot.getStorage().getPath());
+                            showImage(url);
+                        }
+                    });
+                }
+            });
         }
+    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -120,6 +106,7 @@ public class DealActivity extends AppCompatActivity {
                 saveDeal();
                 Toast.makeText(this, "Deal Saved", Toast.LENGTH_LONG).show();
                 clean();
+                backToList();
                 return true;
             case R.id.delete_menu:
                 deleteDeal();
@@ -154,6 +141,7 @@ public class DealActivity extends AppCompatActivity {
         txtTitle.setText("");
         txtDescription.setText("");
         txtTitle.requestFocus();
+        imageView.setImageURI(Uri.parse(""));
     }
 
     private void saveDeal() {
