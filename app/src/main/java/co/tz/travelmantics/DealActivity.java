@@ -171,7 +171,7 @@ public class DealActivity extends AppCompatActivity {
     private void deleteDeal() {
         if (deal == null) {
             Toast.makeText(this, "Please save deal before deleting", Toast.LENGTH_LONG).show();
-            return;
+            return  ;
         }
         mDatabaseReference.child(deal.getId()).removeValue();
     }
@@ -185,6 +185,8 @@ public class DealActivity extends AppCompatActivity {
         txtPrice.setEnabled(isEnabled);
         txtDescription.setEnabled(isEnabled);
         txtTitle.setEnabled(isEnabled);
+        if (!isEnabled)
+        { uploadBtn.setVisibility(View.INVISIBLE);}
 
 
     }
