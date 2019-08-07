@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
@@ -88,9 +89,9 @@ public class DealActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             String url = task.getResult().toString();
                             deal.setImageUrl(url);
+                            deal.setImageName(taskSnapshot.getStorage().getPath());
                             Toast.makeText(getApplicationContext(), "Image uploaded", Toast.LENGTH_LONG).show();
 
-//                            mTravelDeal.setImageName(taskSnapshot.getStorage().getPath());
                             showImage(url);
                         }
                     });
@@ -158,10 +159,27 @@ public class DealActivity extends AppCompatActivity {
 
     private void deleteDeal() {
         if (deal == null) {
-            Toast.makeText(this, "Please save deal before deleting", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please save deal before deleting", Toast.LENGTH_SHORT).show();
             return  ;
         }
+        if (deal.getImageName() != null && deal.getImageName().isEmpty() == false) {
+            Log.d("Image Name", deal.getImageName());
+            StorageReference picRef = FirebaseUtil.mStorage.getReference().child(deal.getImageName());
+            picRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("Image Delete", "Successful");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getApplicationContext(), "Delete Failed", Toast.LENGTH_LONG).show();
+                    Log.d("Image Delete", e.getMessage());
+                }
+            });
+        }
         mDatabaseReference.child(deal.getId()).removeValue();
+
     }
 
     private void backToList() {
